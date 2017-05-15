@@ -230,40 +230,37 @@
                 this.brSettings
             );
 
-            if (!this.get('lockUniScaling')) {
+            // middle-top
+            this._drawControl('mt', ctx, methodName,
+                left + width / 2,
+                top,
+                this.mtIcon,
+                this.mtSettings
+            );
 
-                // middle-top
-                this._drawControl('mt', ctx, methodName,
-                    left + width / 2,
-                    top,
-                    this.mtIcon,
-                    this.mtSettings
-                );
+            // middle-bottom
+            this._drawControl('mb', ctx, methodName,
+                left + width / 2,
+                top + height,
+                this.mbIcon,
+                this.mbSettings
+            );
 
-                // middle-bottom
-                this._drawControl('mb', ctx, methodName,
-                    left + width / 2,
-                    top + height,
-                    this.mbIcon,
-                    this.mbSettings
-                );
+            // middle-right
+            this._drawControl('mr', ctx, methodName,
+                left + width,
+                top + height / 2,
+                this.mrIcon,
+                this.mrSettings
+            );
 
-                // middle-right
-                this._drawControl('mr', ctx, methodName,
-                    left + width,
-                    top + height / 2,
-                    this.mrIcon,
-                    this.mrSettings
-                );
-
-                // middle-left
-                this._drawControl('ml', ctx, methodName,
-                    left,
-                    top + height / 2,
-                    this.mlIcon,
-                    this.mlSettings
-                );
-            }
+            // middle-left
+            this._drawControl('ml', ctx, methodName,
+                left,
+                top + height / 2,
+                this.mlIcon,
+                this.mlSettings
+            );
 
             // middle-top-rotate
             if (this.hasRotatingPoint) {
