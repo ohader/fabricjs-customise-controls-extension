@@ -65,6 +65,14 @@
 
         cornerPadding: 0,
 
+      /**
+       * Whether to render corners outside of bounding rectangle.
+       * @type boolean
+       * @default false
+       */
+
+      cornerOutside: false,
+
         /**
          * Set a custom corner icon
          * @param {Object} obj settings and icon url.
@@ -180,9 +188,13 @@
             var wh = this._calculateCurrentDimensions(true),
                 width = wh.x,
                 height = wh.y,
+                cornerWidth = width + (this.cornerOutside ? this.cornerSize : 0),
+                cornerHeight = height + (this.cornerOutside ? this.cornerSize : 0),
                 scaleOffset = this.cornerSize,
                 left = -( width + scaleOffset ) / 2,
                 top = -( height + scaleOffset ) / 2,
+                cornerLeft = -( cornerWidth + scaleOffset ) / 2,
+                cornerTop = -( cornerHeight + scaleOffset ) / 2,
                 methodName;
 
             if (!this.useCustomIcons) {
@@ -200,64 +212,64 @@
 
             // top-left
             this._drawControl('tl', ctx, methodName,
-                left,
-                top,
+                cornerLeft,
+                cornerTop,
                 this.tlIcon,
                 this.tlSettings
             );
 
             // top-right
             this._drawControl('tr', ctx, methodName,
-                left + width,
-                top,
+                cornerLeft + cornerWidth,
+                cornerTop,
                 this.trIcon,
                 this.trSettings
             );
 
             // bottom-left
             this._drawControl('bl', ctx, methodName,
-                left,
-                top + height,
+                cornerLeft,
+                cornerTop + cornerHeight,
                 this.blIcon,
                 this.blSettings
             );
 
             // bottom-right
             this._drawControl('br', ctx, methodName,
-                left + width,
-                top + height,
+                cornerLeft + cornerWidth,
+                cornerTop + cornerHeight,
                 this.brIcon,
                 this.brSettings
             );
 
             // middle-top
             this._drawControl('mt', ctx, methodName,
-                left + width / 2,
-                top,
+                cornerLeft + cornerWidth / 2,
+                cornerTop,
                 this.mtIcon,
                 this.mtSettings
             );
 
             // middle-bottom
             this._drawControl('mb', ctx, methodName,
-                left + width / 2,
-                top + height,
+                cornerLeft + cornerWidth / 2,
+                cornerTop + cornerHeight,
                 this.mbIcon,
                 this.mbSettings
             );
 
             // middle-right
             this._drawControl('mr', ctx, methodName,
-                left + width,
-                top + height / 2,
+                cornerLeft + cornerWidth,
+                cornerTop + cornerHeight / 2,
                 this.mrIcon,
                 this.mrSettings
             );
 
             // middle-left
             this._drawControl('ml', ctx, methodName,
-                left,
-                top + height / 2,
+                cornerLeft,
+                cornerTop + cornerHeight / 2,
                 this.mlIcon,
                 this.mlSettings
             );
@@ -349,6 +361,90 @@
             }
 
         },
+
+      /**
+       * Sets the coordinates of the draggable boxes in the corners of
+       * the image used to scale/rotate it.
+       * @private
+       */
+      _setCornerCoords: function() {
+          var coords = this.oCoords,
+              angle = degreesToRadians(this.angle),
+              sine = this.cornerSize * Math.sin(angle),
+              cosine = this.cornerSize * Math.cos(angle),
+              // Positioning each square of the element's corner is considered
+              // as first position the four (tl, tr, bl, br) corners and then
+              // rotate by angle around the element's corner point as center.
+              // The following factors represent that for each side of the square
+              // to be calculated, the side length is this.cornerSize.
+              topFactor = -0.5,
+              bottomFactor = 0.5,
+              leftFactor = -0.5,
+              rightFactor = 0.5,
+              // Used to determine which aspect (left, right, top, bottom)
+              // is processed to define proper factors. This results in e.g.
+              // that the element's "tl" corner does not need to be modified
+              // at all corning the square's "br" corner - both are the same
+              // (thus bottomFactor and rightFactor are zero)
+              topCorners = ['tl', 'tr', 'mt'],
+              bottomCorners = ['bl', 'br', 'mb'],
+              leftCorners = ['tl', 'ml', 'bl'],
+              rightCorners = ['tr', 'mr', 'br'],
+              x, y;
+
+          for (var point in coords) {
+              x = coords[point].x;
+              y = coords[point].y;
+
+              if (this.cornerOutside) {
+                  // one out of 'tl', 'tr', 'mt'
+                  if (topCorners.indexOf(point) !== -1) {
+                      topFactor = -1;
+                      bottomFactor = 0;
+                  // one out of 'bl', 'br', 'mb'
+                  } else if (bottomCorners.indexOf(point) !== -1) {
+                      topFactor = 0;
+                      bottomFactor = 1;
+                  // used basically for 'mtr'
+                  } else {
+                      topFactor = -0.5;
+                      bottomFactor = 0.5;
+                  }
+                  // one out of 'tl', 'ml', 'bl'
+                  if (leftCorners.indexOf(point) !== -1) {
+                      leftFactor = -1;
+                      rightFactor = 0;
+                  // one out of 'tr', 'mr', 'br'
+                  } else if (rightCorners.indexOf(point) !== -1) {
+                      leftFactor = 0;
+                      rightFactor = 1;
+                  // used basically for 'mtr'
+                  } else {
+                      leftFactor = -0.5;
+                      rightFactor = 0.5;
+                  }
+              }
+
+              coords[point].corner = {
+                  tl: {
+                      x: x + leftFactor * cosine - topFactor * sine,
+                      y: y + leftFactor * sine + topFactor * cosine
+                  },
+                  tr: {
+                      x: x + rightFactor * cosine - topFactor * sine,
+                      y: y + rightFactor * sine + topFactor * cosine
+                  },
+                  bl: {
+                      x: x + leftFactor * cosine - bottomFactor * sine,
+                      y: y + leftFactor * sine + bottomFactor * cosine
+                  },
+                  br: {
+                      x: x + rightFactor * cosine - bottomFactor * sine,
+                      y: y + rightFactor * sine + bottomFactor * cosine
+                  }
+              };
+          }
+      }
     });
 
     fabric.util.object.extend(fabric.Canvas.prototype, {
